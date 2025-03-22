@@ -1,0 +1,11 @@
+[package]
+name = "critdev/forbiddenapi"
+description = "A complex library for developing games. Mainly NPCs and related functions."
+version = "0.1.8"
+authors = ["CritDEV <fcoc8192r@gmail.com>"]
+registry = "https://github.com/upliftgames/wally-index"
+repository = "https://github.com/crit-DEV/ForbiddenAPI"
+realm = "shared"
+license = "MIT"
+
+[dependencies]

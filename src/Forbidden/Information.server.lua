@@ -1,6 +1,6 @@
 --[[
 
-Forbidden v0.0.10 [Alpha]
+Forbidden v0.0.18 [Alpha]
 
 Thank you for using Forbidden! Remember to look inside the modules you are using
 for detailed explanations.
