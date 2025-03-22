@@ -1,4 +1,4 @@
 # ForbiddenAPI
 
-
-Welcome! Under no circumstances may this software be unlawfully distributed. The contents may be used for commercial use in its intended purpose as a library but not distributed in its full form.
+YT: https://www.youtube.com/channel/UCD3EEMeX-fLtHfd1pg09SSQ/
+Discord: https://discord.com/invite/7vTTmRC2Zm
