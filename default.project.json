@@ -1,6 +1,6 @@
 {
   "name": "forbiddenapi",
   "tree": {
-    "$className": "DataModel"
+    "$path": "src/Forbidden"
   }
 }
