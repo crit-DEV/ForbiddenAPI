@@ -1,0 +1,37 @@
+{
+  "name": "ForbiddenAPI",
+  "tree": {
+
+    "$className": "DataModel",
+
+    "Workspace": {
+      "$className": "Workspace",
+      "Rig": {
+        "$className": "Model",
+        "ChaseAIBase": {
+          "$path": "src/Forbidden/AI/precoded/ChaseAI/ChaseAIBase/ChaseAIBase",
+          "Settings": {
+            "$path": "src/Forbidden/AI/precoded/ChaseAI/ChaseAIBase/compile_exclude/TestSettings.luau"
+          },
+          "$ignoreUnknownInstances": true
+        },
+        "$ignoreUnknownInstances": true
+      },
+      "$ignoreUnknownInstances": true
+    },
+    
+    "ReplicatedStorage": {
+
+      "$className": "ReplicatedStorage",
+      "$ignoreUnknownInstances": true,
+      "ForbiddenAPI": {
+        "$path": "src/Forbidden"
+      }
+
+    }
+  },
+  "globIgnorePaths": [
+    "src/**/compile_exclude",
+    "src/Forbidden/AI/precoded/ChaseAI/**/Settings.luau"
+  ]
+}

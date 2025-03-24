@@ -7,11 +7,14 @@
     "ReplicatedStorage": {
 
       "$className": "ReplicatedStorage",
-
+      "$ignoreUnknownInstances": true,
       "ForbiddenAPI": {
         "$path": "src/Forbidden"
       }
 
     }
-  }
+  },
+  "globIgnorePaths": [
+    "src/**/compile_exclude"
+  ]
 }
