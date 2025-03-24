@@ -1,8 +1,10 @@
 local NPC					= script.Parent
 
+if NPC:FindFirstChild("Humanoid") == nil then return end
+
 local c_ai_script			= NPC:WaitForChild("ChaseAIBase")
 
-local hooks_module		= c_ai_script:WaitForChild("Hooks")
+local hooks_module			= c_ai_script:WaitForChild("Hooks")
 local Hooks					= require(hooks_module)
 local Animations			= require(hooks_module:WaitForChild("Animations"))
 local config				= require(c_ai_script:WaitForChild("Settings"))

@@ -1,19 +1,14 @@
 local API = {}
 
 -- [ Services ] --
-local rs = game:GetService("ReplicatedStorage")
 local pfservice = game:GetService("PathfindingService")
 local debris = game:GetService("Debris")
 
 -- [ Dependencies ] --
-local Forbidden = rs:WaitForChild("Forbidden")
-local std = require(Forbidden:WaitForChild("Standard"))
+local int_Forbidden = script.Parent
+local std = require(int_Forbidden:WaitForChild("Standard"))
 
 local processes = {}
-
--- [ Signals ] --
-local signals = script:WaitForChild("signals")
-local stopAI = signals:WaitForChild("StopAI")
 
 -- [ Type Definitions ] --
 type RaycastSettings = {range: number, SeeThroughTransparentParts: boolean, filterTable: {}}
@@ -78,7 +73,12 @@ setmetatable(API.PathingStates, {
 -- [ Assisting Functions ] --
 API.Stuck = function(humanoid: Humanoid)
 	-- 9/3/24 @rman501, forgot to add position of the NPC causing AI to go to ~0,0,0
-	local pos = humanoid.Parent:FindFirstChild("HumanoidRootPart").CFrame.Position
+	if humanoid == nil then return end
+	
+	local hrt = humanoid.Parent:FindFirstChild("HumanoidRootPart")
+	if hrt == nil then return end
+
+	local pos = hrt.CFrame.Position
 	humanoid:MoveTo(Vector3.new(math.random(-3,3) + pos.X, pos.Y, math.random(-3,3) + pos.Z)) -- 9/30/24 @rman501, stuck fix, pos wasnt added.
 	humanoid.Jump = true
 end
@@ -1049,8 +1049,6 @@ end
 API.Stop = function(NPC: Model)
 	onStoppage(NPC)
 end
-
-stopAI.Event:Connect(onStoppage)
 
 return API
 

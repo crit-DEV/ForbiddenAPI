@@ -1,7 +1,7 @@
 local API = {}
 
-local dir = script.Parent
-local basic = require(dir:WaitForChild("Standard"):WaitForChild("stdfunctions"))
+local int_Forbidden = script.Parent
+local basic = require(int_Forbidden:WaitForChild("Standard"):WaitForChild("stdfunctions"))
 
 type RaycastSettings = {
 	range: number, 
@@ -15,10 +15,12 @@ type RaycastSettings = {
 
 API.LineOfSight = function(Object1: Instance, Object2: Instance, raycastSettings: RaycastSettings, ERROROVERRIDE: boolean): any
 
-	if Object1 == nil then warn("Object1 was nil!") return false end
-	if Object2 == nil then warn("Object2 was nil!") return false end
+	if Object1 == nil then warn("Object1 was nil!"); return false end
+	if Object2 == nil then warn("Object2 was nil!"); return false end
 
-	raycastSettings = raycastSettings or {}
+	if raycastSettings == nil then
+		raycastSettings = {}
+	end
 	ERROROVERRIDE = ERROROVERRIDE or false
 
 	local _LoS_Settings = {

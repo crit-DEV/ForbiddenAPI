@@ -1,6 +1,17 @@
 {
-  "name": "forbiddenapi",
+  "name": "ForbiddenAPI",
   "tree": {
-    "$path": "src/Forbidden"
+
+    "$className": "DataModel",
+    
+    "ReplicatedStorage": {
+
+      "$className": "ReplicatedStorage",
+
+      "ForbiddenAPI": {
+        "$path": "src/Forbidden"
+      }
+
+    }
   }
 }

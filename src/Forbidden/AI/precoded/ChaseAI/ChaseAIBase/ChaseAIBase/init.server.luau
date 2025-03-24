@@ -1,4 +1,5 @@
 -- Made by crit0271, Forbidden API <3
+local config		= require(script:WaitForChild("Settings"))
 
 -- # Services
 local players 			= game:GetService("Players")
@@ -7,21 +8,13 @@ local run 				= game:GetService("RunService")
 local debris			= game:GetService("Debris")
 
 -- # Forbidden Modules
-local forbidden_rs 		= rs:WaitForChild("Forbidden")
-local std 				= require(forbidden_rs:WaitForChild("Standard"))
-local int_ai			= forbidden_rs:WaitForChild("AI")	
-local ai 				= require(int_ai)
-
--- # Events
-local events 			= script.Parent:WaitForChild("Events")
-
-local BE_StartAI 		= events:WaitForChild("StartAI")
-local BE_StopAI 		= events:WaitForChild("StopAI")
-local BE_TargetSeen 	= events:WaitForChild("TargetSeen")
-local BE_TargetLost 	= events:WaitForChild("TargetLost")
+local int_forbidden 	= rs:WaitForChild("ForbiddenAPI")
+local int_ai			= int_forbidden:WaitForChild("AI")
+local forbidden			= require(int_forbidden)
+local std 				= forbidden.Standard
+local ai 				= forbidden.AI
 
 -- # Settings
-local config		= require(script:WaitForChild("Settings"))
 local _hooks_mod 		= script:WaitForChild("Hooks")
 local hooks 		= require(_hooks_mod)
 local common		= require(_hooks_mod:WaitForChild("Common"))
@@ -109,7 +102,8 @@ local function damage_delay_handler()
 	creditKill = true -- if the player is lost and it doesnt think it killed it (based on this variable) then it will call LostPlayer
 	damaged_recently = true
 
-	if config.disable_ai_while_damaging then
+	-- 3/23/25 @rman501, disableAIWhileDamaging key in config was not correct.
+	if config.disableAIWhileDamaging then
 		spawn(function()
 			config.isActive = false
 			task.wait(config.damageDelay)
@@ -118,7 +112,7 @@ local function damage_delay_handler()
 		end)
 	end
 
-	if not(config.disable_ai_while_damaging) then
+	if not(config.disableAIWhileDamaging) then
 		spawn(function()
 			task.wait(config.damageDelay)
 			damaged_recently = false
@@ -148,10 +142,9 @@ local function Damage(player: Player)
 	if plr_human.Health <= 0 then return end
 
 	-- Damage player, SFX, animations, etc...
-	local plr_human = plr_char.Humanoid
 	plr_human.Health -= config.damageDone
 
-	spawn(function() hooks.Out.TouchedTargetPlayer(player.Character) end)
+	spawn(function() hooks.Out.TouchedTargetPlayer(player.Character) end) -- ignore error
 
 	damage_delay_handler() -- mandatory ...
 
@@ -223,10 +216,15 @@ local function ContinueChasing(TargetedPlayer: Player)
 
 	-- 10/22/24 @rman501, limit AI Chase range
 	if not isValidTarget(TargetedPlayer) then return end
-	local plr_human = TargetedPlayer.Character.Humanoid
+
+	local char = TargetedPlayer.Character
+	if char == nil then return false end
+
+	local plr_human = char:FindFirstChild("Humanoid")
 	if plr_human.Health <= 0 then return false end
 
-	local plr_hrt = TargetedPlayer.Character.HumanoidRootPart
+	local plr_hrt = char:FindFirstChild("HumanoidRootPart")
+	if plr_hrt == nil then return false end
 
 	if config.LimitChaseRange then
 
@@ -248,7 +246,6 @@ end
 
 -- CALLED WHENEVER THE AI STARTS TO CHASE A PLAYER
 local function PlayerChaseBegan(TargetedPlayer: Player)
-	BE_TargetSeen:Fire(TargetedPlayer)
 
 	-- 10/22/24 @rman501, movable targeting sys
 	if config.doWander or not config.MeasureChaseRangeFromWhereStarted then
@@ -271,18 +268,10 @@ end
 
 -- CALLED WHENEVER THE AI LOSES THE TARGETED PLAYER!
 local function LostPlayer(TargetedPlayer: Player, overrideNetworkReset: boolean)
-	BE_TargetLost:Fire(TargetedPlayer)
 
 	creditKill = false
 	config.enemy_human.WalkSpeed = config.wanderSpeed
-	if config.NotInSightDoSprint then
-		if TargetedPlayer.Character ~= nil then
-			if TargetedPlayer.Character.Humanoid.Health > 0 then
-				config.enemy_human.WalkSpeed = config.chaseSpeed
-			end
-		end
-	end
-
+	
 	if config.MeasureChaseRangeFromWhereStarted and config.Visualize then
 		visualization.weldVisualParts()
 	end
@@ -291,6 +280,20 @@ local function LostPlayer(TargetedPlayer: Player, overrideNetworkReset: boolean)
 		if not config.doWander and not (config.LimitChaseRange) then hooks.Animator.MotionStopped() end -- if it is not going to wander, then stop animations
 		hooks.Out.PlayerChaseEnded(TargetedPlayer) 
 	end)
+
+	local char = TargetedPlayer.Character
+	if char == nil then return end
+
+	local human = char:FindFirstChild("Humanoid")
+	if human == nil then return end  
+
+	if config.NotInSightDoSprint then
+		if human > 0 then
+			config.enemy_human.WalkSpeed = config.chaseSpeed
+		end
+	end
+	
+
 end
 
 -- Called when the AI starts to wander.
@@ -429,7 +432,7 @@ local function attackRangeHandler(escaped: boolean) -- escaped could be due to d
 
 			if attackedPlayer.Character == nil then
 				if not config.CallOutsideAttackRangeOnDeath then return end
-				hooks.Out.OutsideAttackRange(attackedPlayer)
+				hooks.Out.OutsideAttackRange(attackedPlayer, common.GetDistanceToPlayer(attackedPlayer))
 				return
 			end
 
@@ -438,7 +441,7 @@ local function attackRangeHandler(escaped: boolean) -- escaped could be due to d
 				if target_human.Health == 0 and not config.CallOutsideAttackRangeOnDeath then return end
 			end
 
-			hooks.Out.OutsideAttackRange(attackedPlayer.Character)	
+			hooks.Out.OutsideAttackRange(attackedPlayer.Character, common.GetDistanceToPlayer(attackedPlayer))	
 		end
 
 		return
@@ -450,12 +453,12 @@ local function attackRangeHandler(escaped: boolean) -- escaped could be due to d
 	if dist == math.huge then return end
 
 	if ((not isInRange) or (not config.CallAttackRangeHooksWhenChange)) and dist < config.MinAttackRange then
-		hooks.Out.InsideAttackRange(attackedPlayer.Character) 
+		hooks.Out.InsideAttackRange(attackedPlayer.Character, common.GetDistanceToPlayer(attackedPlayer)) 
 		isInRange = true
 	end
 
 	if (isInRange or (not config.CallAttackRangeHooksWhenChange)) and dist > config.MinAttackRange then
-		hooks.Out.OutsideAttackRange(attackedPlayer.Character)
+		hooks.Out.OutsideAttackRange(attackedPlayer.Character, common.GetDistanceToPlayer(attackedPlayer))
 		isInRange = false
 	end
 end
@@ -463,6 +466,7 @@ end
 local canChaseToCorner = false
 local function Chase(player: Player?)
 	if isChasing then return end
+	if player == nil then return end
 	if player ~= attackedPlayer then -- if new player reset.
 		isInRange = false
 		noLongerValid = false
@@ -489,7 +493,7 @@ local function Chase(player: Player?)
 				lastCallTime = thisCallTime
 				isWandering = true
 				spawn(function()
-
+					
 					-- 3/13/25 @rman501, refactored, added PFLink Handler
 					local specSettings = {
 						StandardPathfindSettings = config.standardPathfindSettings, 
@@ -505,13 +509,13 @@ local function Chase(player: Player?)
 							PathfindingLinkReached = PathfindingLinks.MANAGER
 						}
 					}
-
+					
 					if config.standardPathfindSettings ~= {} and config.standardPathfindSettings ~= nil then 
 						specSettings["StandardPathfindSettings"] = config.standardPathfindSettings
 					end
-
+					
 					ai.SmartPathfind(config.enemy_char, anchorPoint, true, specSettings) -- start player chase.
-
+					
 					returnToAnchorPoint = false
 					if lastCallTime ~= thisCallTime then return end
 					lastCallTime = 0
@@ -530,7 +534,7 @@ local function Chase(player: Player?)
 	end
 
 	local plr_char = player.Character
-	if plr_char == nil then warn("Player is nil!") return end
+	if plr_char == nil then warn("Player is nil!"); return end
 
 	local core_failures = 0
 
@@ -552,7 +556,7 @@ local function Chase(player: Player?)
 	end
 
 	local function trackPlayer()
-
+		
 		-- 3/13/25 @rman501, added PFLink Handler
 		local specSettings = {
 			Tracking = true, 
@@ -567,7 +571,7 @@ local function Chase(player: Player?)
 			},
 			CollinearTargetPositionOffset = config.OffsetFromPlayer
 		}
-
+		
 		if config.standardPathfindSettings ~= {} and config.standardPathfindSettings ~= nil then 
 			specSettings.StandardPathfindSettings = config.standardPathfindSettings
 		end
@@ -600,7 +604,7 @@ local function Chase(player: Player?)
 
 		if plr_char == nil then break end
 		local plr_human = plr_char:FindFirstChild("Humanoid")
-		if plr_human and plr_human.Health <= 0 then stopChasing() break end
+		if plr_human and plr_human.Health <= 0 then stopChasing(); break end
 
 		if not ContinueChasing(player) then break end
 
@@ -638,7 +642,7 @@ local function Chase(player: Player?)
 				local result = nil
 				local timeNow = os.clock()
 				lastCallTime = timeNow
-
+				
 				-- 3/13/25 @rman501, refactored, added PFLink Handler 
 				local specSettings = {
 					SkipToWaypoint = 2, 
@@ -650,13 +654,13 @@ local function Chase(player: Player?)
 						PathfindingLinkReached = PathfindingLinks.MANAGER
 					}
 				}
-
+				
 				if config.standardPathfindSettings ~= {} and config.standardPathfindSettings ~= nil then 
 					specSettings["StandardPathfindSettings"] = config.standardPathfindSettings
 				end
-
+				
 				result = ai.SmartPathfind(config.enemy_char, chasePart, true, specSettings) -- start player chase.
-
+				
 				if result == Enum.PathStatus.NoPath then end
 
 				-- When the pathfind is done, either because it got cancelled, or etc...
@@ -680,7 +684,7 @@ local function Chase(player: Player?)
 	LostPlayer(player, specRelease)
 end
 
-local forcedNode: BasePart 	= nil -- 10/21/24 @rman501, for hooks.
+local forcedNode: BasePart? = nil -- 10/21/24 @rman501, for hooks.
 local nodeWanderIndex		= 1
 local function Wander()
 
@@ -731,7 +735,7 @@ local function Wander()
 
 		doOptChase = false
 
-		if randomLocation == nil then warn("Random Location was nil, please make sure all the nodes are correct!") return Enum.PathStatus.NoPath end
+		if randomLocation == nil then warn("Random Location was nil, please make sure all the nodes are correct!"); return Enum.PathStatus.NoPath end
 
 		-- 10/22/24 @rman501, support Vector3 & CFrame
 		-- 10/25/24 @rman501, only call if successful.
@@ -773,7 +777,7 @@ local function Wander()
 				wanderCompleteCall(goal.CFrame.Position)
 			end
 		end
-
+		
 		-- 3/13/25 @rman501, added PFLink Handler
 		local specSets = {
 			SMMD_RaycastParams = {
@@ -807,7 +811,7 @@ local function Wander()
 
 		while tryPathfind() == Enum.PathStatus.NoPath do
 			if config.enemy_char == nil then return end
-			if forcedNodeUsed then forcedNode = nil forcedNodeUsed = false end -- 10/21/24 @rman501, allow people to choose a node to target with hooks
+			if forcedNodeUsed then forcedNode = nil; forcedNodeUsed = false end -- 10/21/24 @rman501, allow people to choose a node to target with hooks
 			run.Heartbeat:Wait()
 			if tStarted ~= lastCallTime then return end
 			if isChasing then return end
@@ -816,7 +820,7 @@ local function Wander()
 			lastCallTime = tStarted
 		end
 
-		if forcedNodeUsed then forcedNode = nil forcedNodeUsed = false end -- 10/21/24 @rman501, allow people to choose a node to target with hooks
+		if forcedNodeUsed then forcedNode = nil; forcedNodeUsed = false end -- 10/21/24 @rman501, allow people to choose a node to target with hooks
 		if isChasing then return end
 		if tStarted ~= lastCallTime then return end
 
@@ -903,12 +907,6 @@ local function visualizeConeAndLimits()
 	end
 end
 
--- 10/24/24 @rman501, visualize view cone.
-local function visualizeViewCone()
-	if not config.Visualize then return end
-	if not config.ViewCone  then return end
-end
-
 -- The core loop
 local function Main()
 
@@ -947,12 +945,10 @@ local function stopAI()
 	isChasing = false
 	config.enemy_human.WalkSpeed = config.wanderSpeed
 end
-BE_StopAI.Event:Connect(stopAI)
 
 local function startAI()
 	config.isActive = true
 end
-BE_StartAI.Event:Connect(startAI)
 
 config.enemy_hrt.Touched:Connect(touchHandler)
 for i, hitbox in pairs(config.hitboxes) do
@@ -1014,7 +1010,7 @@ end
 HOOKS_IN.Wander = function(optNode: BasePart)
 	if optNode == nil then return end
 	if not config.isActive then return end
-	if isChasing then return false end
+	if isChasing then return end
 
 	forcedNode = optNode
 
@@ -1048,7 +1044,7 @@ local infaPause = false
 HOOKS_IN.PauseAI = function(optionalPauseTimer: number)
 
 	if optionalPauseTimer == nil then optionalPauseTimer = 0 end
-	if optionalPauseTimer == 0 then infaPause = true timeToRelease = 0 end
+	if optionalPauseTimer == 0 then infaPause = true; timeToRelease = 0 end
 
 	-- Update Pause Timer
 	local isAlreadyCalled = timeToRelease ~= 0
@@ -1062,7 +1058,7 @@ HOOKS_IN.PauseAI = function(optionalPauseTimer: number)
 	ai.Stop(config.enemy_char)
 
 	if isChasing then
-		HOOKS_IN.StopChasing()
+		HOOKS_IN.StopChasing(false)
 	end
 
 	if isWandering then
@@ -1084,7 +1080,7 @@ HOOKS_IN.PauseAI = function(optionalPauseTimer: number)
 		if infaPause then return end
 		timeToRelease = 0
 
-		HOOKS_IN.ResumeAI()
+		HOOKS_IN.ResumeAI() -- ignore
 	end)
 end
 
@@ -1107,7 +1103,7 @@ end
 --	NPC_List = newList
 --end
 
-hooks.In = HOOKS_IN
+hooks.In = HOOKS_IN -- ignore
 
 --[[
 

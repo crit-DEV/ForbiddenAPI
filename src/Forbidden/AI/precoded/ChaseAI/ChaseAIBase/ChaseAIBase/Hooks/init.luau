@@ -45,6 +45,7 @@ type HOOKS_TYPEDEF = {
 }
 
 -- look above for info
+-- ignore
 local Hooks: HOOKS_TYPEDEF = {
 	In = { -- These are binds you can use.
 		StopChasing = nullbind,
@@ -96,75 +97,6 @@ local binds: BINDS_OUT_TYPEDEF = {}
 	SYNC: the code will wait for your code to return a value (it "yields").
 ]]--
 
-
--- EXAMPLE
--- CHASE AI WITH HIDING
--- EXAMPLE
--- # Events
-local rs 				= game:GetService("ReplicatedStorage")
-
-local remotes			= rs:WaitForChild("signals"):WaitForChild("remotes")
-
-local RE_HideEvent		= remotes:WaitForChild("events"):WaitForChild("HideEvent")
-local RF_RequestLocker	= remotes:WaitForChild("functions"):WaitForChild("RequestLocker")
-
-local forbidden			= rs:WaitForChild("Forbidden")
-local ai				= require(forbidden:WaitForChild("AI"))
-
-local function reachedLockerWherePlayerWasHiding(Player: Player)
-	-- for testing purposes
-	local char = Player.Character
-	local human = char:WaitForChild("Humanoid")
-	human.Health -= 100 -- insta kill!
-end
-
-local function isPlayerHiding(TargetedPlayer: Player)
-	local tV = TargetedPlayer:FindFirstChild("TemporaryValues")
-	if tV == nil then return false end
-
-	local isHidingObj = tV:FindFirstChild("isHiding")
-	if isHidingObj == nil then return false end
-
-	return isHidingObj.Value
-end
-
-local function sawPlayerHide(Player: Player)
-
-	local lockerHidingIn = RF_RequestLocker:InvokeClient(Player)
-	if lockerHidingIn == nil then warn("No locker found! Player: "  .. Player.Name) return end
-
-	local partToGo: BasePart = lockerHidingIn:WaitForChild("front")
-	if partToGo == nil then warn("No spot for the AI to go in front of the locker to!") return end
-
-	ChaseAI.PauseAI()
-	ai.Stop(config.enemy_char)
-
-	local done = false
-	local result = nil
-
-	local escaped = false
-	spawn(function()
-		while result == nil do
-			if not isPlayerHiding(Player) then ChaseAI.ResumeAI() ai.Stop() escaped = true return end -- Handoff to normalcy if the player stops hiding.
-			task.wait()
-		end
-	end)
-
-	if #config.standardPathfindSettings > 0 then 
-		result = ai.SmartPathfind(config.enemy_char, partToGo, true, {StandardPathfindSettings = config.standardPathfindSettings, ["Hooks"] = {GoalReached = function() reachedLockerWherePlayerWasHiding(Player) end}})
-	else
-		result = ai.SmartPathfind(config.enemy_char, partToGo, true, {["Hooks"] = {GoalReached = function() reachedLockerWherePlayerWasHiding(Player) end}})
-	end
-
-	if escaped then return end -- if the player left the locker than let the handler, handle it.
-
-	ai.Stop(config.enemy_char) -- idk if needed, just for insurance.
-	ChaseAI.ResumeAI()
-	if result == Enum.PathStatus.NoPath then done = true warn("No path found! (could be caused by locker chase cancel)") return end 
-
-	return 
-end
-
 -- ASYNC
 binds.TouchedTargetPlayer = function(Character: Model)
 	print("Target Player Touched: " .. Character.Name)
@@ -176,17 +108,14 @@ binds.TouchedOtherPlayer = function(Character: Model)
 end
 
 -- ASYNC
-binds.PlayerChaseBegan = function(Player: Player)
+binds.PlayerChaseBegan = function(Player: Player?)
 	print("Player Chase Began: " .. Player.Name)
 end
 
 -- ASYNC
 -- READ: Use WanderStarted for a true lost player, since this is also called when the AI begins to track to the position it last saw the player.
-binds.PlayerChaseEnded = function(Player: Player)
+binds.PlayerChaseEnded = function(Player: Player?)
 	print("Player Line of Sight Lost: " .. Player.Name)
-	if isPlayerHiding(Player) and config.LockerChase then 
-		sawPlayerHide(Player)
-	end
 end
 
 -- ASYNC
@@ -203,7 +132,7 @@ binds.WanderCompleted = function(location: Vector3)
 end
 
 local doingAttack = false
-local function doAttack(Character: model, dist: number)
+local function doAttack(Character: Model, dist: number)
 	--[[
 	
 		ChaseAI.PauseAI(3)
@@ -256,20 +185,22 @@ end
 
 -- SYNC
 -- Add special code here to influence if the AI should keep chasing the player.
-binds.ContinueChasing = function(player: Player)
+binds.ContinueChasing = function(player: Player?)
 	return true
 end
 
 -- SYNC
 -- Return false to remove a player as a possible target (for that cycle)
-binds.IsATarget = function(player: Player)
-	return not isPlayerHiding(player) -- 2/19/25 @rman501, line was missing
+binds.IsATarget = function(player: Player?)
+	return true
 end
+
 -- SYNC
 -- Called when the script loads all the BINDS_IN.
 binds.INIT = function()
 	ChaseAI = Hooks.In
 end
+
 
 -- Set hooks out to the binds created.
 Hooks.Out = binds

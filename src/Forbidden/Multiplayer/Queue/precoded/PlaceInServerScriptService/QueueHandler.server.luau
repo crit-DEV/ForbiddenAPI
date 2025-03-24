@@ -3,17 +3,17 @@ local playersRequired = 2
 -- Services
 local rs = game:GetService("ReplicatedStorage")
 
-local forbidden = rs:WaitForChild("Forbidden")
-local multiplayer = forbidden:WaitForChild("Multiplayer")
-local queueMOD = require(multiplayer:WaitForChild("Queue"))
-local std = require(forbidden:WaitForChild("Standard"))
+local int_Forbidden 	= rs:WaitForChild("ForbiddenAPI")
+local multiplayer 		= int_Forbidden:WaitForChild("Multiplayer")
+local queueMOD 			= require(multiplayer:WaitForChild("Queue"))
+local std 				= require(int_Forbidden:WaitForChild("Standard"))
 
-local queueFOL = multiplayer:WaitForChild("Queue")
-local signals = queueFOL:WaitForChild("signals")
-local join = signals:WaitForChild("join")
-local leave = signals:WaitForChild("leave")
-local matchmade = signals:WaitForChild("toClientMatchInfo")
-local server_matchmade = signals:WaitForChild("toServerMatchInfo")
+local queueFOL 			= multiplayer:WaitForChild("Queue")
+local signals 			= queueFOL:WaitForChild("signals")
+local join 				= signals:WaitForChild("join")
+local leave 			= signals:WaitForChild("leave")
+local matchmade 		= signals:WaitForChild("toClientMatchInfo")
+local server_matchmade 	= signals:WaitForChild("toServerMatchInfo")
 
 
 

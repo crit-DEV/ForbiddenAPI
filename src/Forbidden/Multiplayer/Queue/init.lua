@@ -1,9 +1,5 @@
 local API = {}
 
-local rs = game:GetService("ReplicatedStorage")
-local forbidden = rs:WaitForChild("Forbidden")
-local std = forbidden:WaitForChild("Multiplayer")
-
 -- FOR AUTOMATED VERSION COMING SOON
 
 --local this = script

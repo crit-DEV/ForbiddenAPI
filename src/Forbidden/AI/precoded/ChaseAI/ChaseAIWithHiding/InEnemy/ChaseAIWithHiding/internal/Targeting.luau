@@ -4,8 +4,8 @@ local API = {}
 local players	= game:GetService("Players")
 local rs		= game:GetService("ReplicatedStorage")
 
-local forbidden	= rs:WaitForChild("Forbidden")
-local std		= require(forbidden:WaitForChild("Standard"))
+local int_Forbidden	= rs:WaitForChild("ForbiddenAPI")
+local std			= require(int_Forbidden:WaitForChild("Standard"))
 
 local c_ai_script 	= script.Parent.Parent
 local config 		= require(c_ai_script:WaitForChild("Settings"))
@@ -15,7 +15,7 @@ local common		= require(hooks_mod:WaitForChild("Common"))
 
 -- 10/31/24 @rman501, refactored to use Math module
 local chasePart 	= nil
-API.isInView = function(plr_char: Model, overridenFOV: number) -- Determines if a model is in the view of the AI.
+API.isInView = function(plr_char: Model, overridenFOV: number?) -- Determines if a model is in the view of the AI.
 
 	if chasePart == nil then
 		chasePart = config.enemy_char:FindFirstChild("ChasePartForNPC-Forbidden")
@@ -35,9 +35,9 @@ API.isInView = function(plr_char: Model, overridenFOV: number) -- Determines if 
 	return result
 end
 
-local AP_PREV_TARGET: Model = nil -- 10/31/24 @rman501, character because if plr died, this would become nil. 
-API.SetPreviousTarget = function(new: Model)
-	AP_PREV_TARGET = new
+local AP_PREV_TARGET: Model? = nil -- 10/31/24 @rman501, character because if plr died, this would become nil. 
+API.SetPreviousTarget = function(newTarget: Model?)
+	AP_PREV_TARGET = newTarget
 end
 
 --local NPC_List = {}
@@ -111,14 +111,13 @@ API.GetNearestVisiblePlayer = function()
 			end
 		end
 
-		if API.isInView(plr_char) then
+		if API.isInView(plr_char, nil) then
 			table.insert(playersInLOS, {dist, player})
 			continue
 		end
 
 		if dist <= config.detectionBubble then --untested
 
-			local plr_hrt = plr_char.HumanoidRootPart
 			local result = std.math.LineOfSight(config.enemy_char, plr_char, {range = config.detectionRange, SeeThroughTransparentParts = config.seeThroughTransparent, SeeThroughNonCollidable = config.seeThroughCanCollide, filterTable = {config.enemy_char, chasePart}})
 
 			if result then
