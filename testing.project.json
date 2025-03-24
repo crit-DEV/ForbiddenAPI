@@ -3,6 +3,16 @@
   "tree": {
 
     "$className": "DataModel",
+
+    "Workspace": {
+      "$className": "Workspace",
+      "Rig": {
+        "$className": "Model",
+        "$path": "src/Forbidden/AI/ChaseAI/ChaseAIBase",
+        "$ignoreUnknownInstances": true
+      },
+      "$ignoreUnknownInstances": true
+    },
     
     "ReplicatedStorage": {
 
