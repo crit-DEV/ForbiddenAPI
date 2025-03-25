@@ -1,3 +1,4 @@
+--!nocheck
 local Animations = {}
 
 -- Default hooked animations.
@@ -58,7 +59,7 @@ if not SILENCE_ANIMATE_OBTAINER then
 	AnimateScript = config.enemy_char:WaitForChild("Animate", 1)
 	if AnimateScript == nil then warn("[ChaseAI.Animations] Animate script does not exist, set `SILENCE_ANIMATE_OBTAINER` to true if expected.") end
 	if AnimateScript ~= nil then
-		if not AnimateScript:GetAttribute("ForbiddenAnimate") then warn("[ChaseAI.Animations] Animate script is not Forbidden's, get the `Animate` script from inside the ChaseAI folder or  set `SILENCE_ANIMATE_OBTAINER` to true if expected.") end
+		if not AnimateScript:FindFirstChild("ForbiddenAnimate") then warn("[ChaseAI.Animations] Animate script is not Forbidden's, get the `Animate` script from inside the ChaseAI folder or  set `SILENCE_ANIMATE_OBTAINER` to true if expected.") end
 	end
 end
 
@@ -109,9 +110,9 @@ end
 		animTrack:Play()
 	</code>
 ]]--
-Animations.LoadAnimation = function(AnimationId: number?, CacheAnimation: boolean): AnimationTrack
+Animations.LoadAnimation = function(AnimationId: number?, CacheAnimation: boolean): AnimationTrack?
 	if typeof(AnimationId) == "number" then
-		if AnimationId == 0 then return end
+		if AnimationId == 0 then return nil end
 	end
 
 	-- Return animation from cache
@@ -160,7 +161,9 @@ end
 Animations.StopAllDefaultAnimations = function()
 	for i, v in pairs(Animations) do
 		if Animations.isInDefaultAnimScript(i) then
-			Animations.LoadAnimation(i):Stop()
+			local anim = Animations.LoadAnimation(i, true)
+			if anim == nil then continue end
+			anim:Stop()
 		end
 	end
 end

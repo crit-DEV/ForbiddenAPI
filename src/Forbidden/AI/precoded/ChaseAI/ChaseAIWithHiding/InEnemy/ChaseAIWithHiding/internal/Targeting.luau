@@ -4,7 +4,7 @@ local API = {}
 local players	= game:GetService("Players")
 local rs		= game:GetService("ReplicatedStorage")
 
-local int_Forbidden	= rs:WaitForChild("ForbiddenAPI")
+local int_Forbidden	= rs:WaitForChild("Forbidden")
 local std			= require(int_Forbidden:WaitForChild("Standard"))
 
 local c_ai_script 	= script.Parent.Parent

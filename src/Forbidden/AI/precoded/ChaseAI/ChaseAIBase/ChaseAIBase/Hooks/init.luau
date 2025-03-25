@@ -1,3 +1,4 @@
+--!nocheck
 -- Collapse everything up to the start of `binds. ` for ease of reading
 
 -- GO TO THE BOTTOM TO EDIT.
@@ -21,14 +22,14 @@ type BINDS_IN_TYPEDEF = {
 -- For functions created by this.
 type BINDS_OUT_TYPEDEF = {
 	INIT: () -> nil,								-- On INIT call by main script.
-	TouchedTargetPlayer: (Character: Model) -> nil,		-- Calls when the target player is touched.
-	TouchedOtherPlayer: (Character: Model) -> nil,		-- Calls when a player other than the target is touched.
+	TouchedTargetPlayer: (Character: Model?) -> nil,		-- Calls when the target player is touched.
+	TouchedOtherPlayer: (Character: Model?) -> nil,		-- Calls when a player other than the target is touched.
 	PlayerChaseBegan: (Player: Player?) -> nil,			-- Passes the player the AI has begun to chase.
 	PlayerChaseEnded: (Player: Player?) -> nil,			-- Passes the player the AI has stopped chasing.
 	WanderStarted: (location: Vector3) -> nil,			-- Passes the location the AI has started to wander to.
 	WanderCompleted: (location: Vector3) -> nil,		-- Passes the location the AI has completed its wander to.
-	InsideAttackRange: (Character: Model, dist: number) -> nil,		-- Called whenever the player enters the attack range (or continuously if not CallAttackRangeHooksWhenChange) 
-	OutsideAttackRange: (Character: Model, dist: number) -> nil,	-- Called whenever the player exits the attack range  (or continuously if not CallAttackRangeHooksWhenChange) 
+	InsideAttackRange: (Character: Model?, dist: number) -> nil,		-- Called whenever the player enters the attack range (or continuously if not CallAttackRangeHooksWhenChange) 
+	OutsideAttackRange: (Character: Model?, dist: number) -> nil,	-- Called whenever the player exits the attack range  (or continuously if not CallAttackRangeHooksWhenChange) 
 	ContinueChasing: (Player: Player?) -> boolean,		-- Asks if the AI should continue chasing the TargetPlayer.
 	IsATarget: (Player: Player?) -> boolean,			-- Should the player be considered as a target for the AI, could also be a model if an NPC (SetListOfAlternativeTargets) was passed.
 }

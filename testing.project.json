@@ -11,7 +11,20 @@
         "ChaseAIBase": {
           "$path": "src/Forbidden/AI/precoded/ChaseAI/ChaseAIBase/ChaseAIBase",
           "Settings": {
-            "$path": "src/Forbidden/AI/precoded/ChaseAI/ChaseAIBase/compile_exclude/TestSettings.luau"
+            "$path": "src/Forbidden/AI/precoded/ChaseAI/ChaseAIBase/compile_exclude/TestSettings.luau",
+            "$ignoreUnknownInstances": true
+          },
+          "Hooks": {
+            "$path": "src/Forbidden/AI/precoded/ChaseAI/ChaseAIBase/ChaseAIBase/Hooks",
+            "$ignoreUnknownInstances": true,
+            "Animations": {
+              "$path": "src/Forbidden/AI/precoded/ChaseAI/ChaseAIBase/compile_exclude/TestAnimations",
+              "$ignoreUnknownInstances": true,
+              "Animate": {
+                "$ignoreUnknownInstances": true,
+                "$path": "src/Forbidden/AI/precoded/ChaseAI/ChaseAIBase/ChaseAIBase/Hooks/Animations/Animate"
+              }
+            }
           },
           "$ignoreUnknownInstances": true
         },
@@ -24,7 +37,7 @@
 
       "$className": "ReplicatedStorage",
       "$ignoreUnknownInstances": true,
-      "ForbiddenAPI": {
+      "Forbidden": {
         "$path": "src/Forbidden"
       }
 
@@ -32,6 +45,8 @@
   },
   "globIgnorePaths": [
     "src/**/compile_exclude",
-    "src/Forbidden/AI/precoded/ChaseAI/**/Settings.luau"
+    "src/Forbidden/AI/precoded/ChaseAI/**/Settings.luau",
+    "src/**/Hooks",
+    "src/**/Animations"
   ]
 }

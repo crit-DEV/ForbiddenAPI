@@ -2,7 +2,7 @@
 local rs = game:GetService("ReplicatedStorage")
 
 -- Referencing
-local int_Forbidden = rs:WaitForChild("ForbiddenAPI")
+local int_Forbidden = rs:WaitForChild("Forbidden")
 local multiplayer = int_Forbidden:WaitForChild("Multiplayer")
 local queue = multiplayer:WaitForChild("Queue")
 

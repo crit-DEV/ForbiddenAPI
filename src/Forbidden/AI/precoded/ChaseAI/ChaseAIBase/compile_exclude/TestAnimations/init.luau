@@ -23,7 +23,7 @@ end
 Animations.EnableScript	= true -- set to false to disable the default animation handler.
 
 --Animations.Idle			= MakeAnimation(0, Enum.AnimationPriority.Idle, true) -- ID, PRIORITY, LOOPED?, SPEED (default: 1.0)
-Animations.Idle			= MakeAnimation(0, Enum.AnimationPriority.Idle, true)
+Animations.Idle			= MakeAnimation(92745889277946, Enum.AnimationPriority.Idle, true)
 Animations.Died			= MakeAnimation(0, Enum.AnimationPriority.Action4, false)
 Animations.Jumping		= MakeAnimation(0, Enum.AnimationPriority.Movement, false)
 Animations.Freefall		= MakeAnimation(0, Enum.AnimationPriority.Movement, false)
@@ -35,8 +35,8 @@ Animations.Seated		= MakeAnimation(0, Enum.AnimationPriority.Movement, false)
 Animations.Swimming		= MakeAnimation(0, Enum.AnimationPriority.Movement, false)
 
 -- auto-hooked movement anims.
-Animations.Chasing 		= MakeAnimation(0, Enum.AnimationPriority.Movement, true) -- run anim
-Animations.Wandering	= MakeAnimation(0, Enum.AnimationPriority.Movement, true) -- walk anim
+Animations.Chasing 		= MakeAnimation(136910744497279, Enum.AnimationPriority.Movement, true) -- run anim
+Animations.Wandering	= MakeAnimation(126212996576090, Enum.AnimationPriority.Movement, true) -- walk anim
 
 -- [ Custom ] --
 -- these you have to implement somewhere in hooks or another script.

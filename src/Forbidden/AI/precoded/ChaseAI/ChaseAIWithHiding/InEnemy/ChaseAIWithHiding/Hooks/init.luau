@@ -1,3 +1,4 @@
+--!nocheck
 -- Collapse everything up to the start of `binds. ` for ease of reading
 
 -- GO TO THE BOTTOM TO EDIT.
@@ -108,7 +109,7 @@ local remotes			= rs:WaitForChild("signals"):WaitForChild("remotes")
 local RE_HideEvent		= remotes:WaitForChild("events"):WaitForChild("HideEvent")
 local RF_RequestLocker	= remotes:WaitForChild("functions"):WaitForChild("RequestLocker")
 
-local int_Forbidden		= rs:WaitForChild("ForbiddenAPI")
+local int_Forbidden		= rs:WaitForChild("Forbidden")
 local ai				= require(int_Forbidden:WaitForChild("AI"))
 
 local function reachedLockerWherePlayerWasHiding(Player: Player)
@@ -131,10 +132,10 @@ end
 local function sawPlayerHide(Player: Player)
 
 	local lockerHidingIn = RF_RequestLocker:InvokeClient(Player)
-	if lockerHidingIn == nil then warn("No locker found! Player: "  .. Player.Name) return end
+	if lockerHidingIn == nil then warn("No locker found! Player: "  .. Player.Name); return end
 
 	local partToGo: BasePart = lockerHidingIn:WaitForChild("front")
-	if partToGo == nil then warn("No spot for the AI to go in front of the locker to!") return end
+	if partToGo == nil then warn("No spot for the AI to go in front of the locker to!"); return end
 
 	ChaseAI.PauseAI()
 	ai.Stop(config.enemy_char)
@@ -145,7 +146,7 @@ local function sawPlayerHide(Player: Player)
 	local escaped = false
 	spawn(function()
 		while result == nil do
-			if not isPlayerHiding(Player) then ChaseAI.ResumeAI() ai.Stop() escaped = true return end -- Handoff to normalcy if the player stops hiding.
+			if not isPlayerHiding(Player) then ChaseAI.ResumeAI(); ai.Stop(); escaped = true; return end -- Handoff to normalcy if the player stops hiding.
 			task.wait()
 		end
 	end)
@@ -160,7 +161,7 @@ local function sawPlayerHide(Player: Player)
 
 	ai.Stop(config.enemy_char) -- idk if needed, just for insurance.
 	ChaseAI.ResumeAI()
-	if result == Enum.PathStatus.NoPath then done = true warn("No path found! (could be caused by locker chase cancel)") return end 
+	if result == Enum.PathStatus.NoPath then done = true; warn("No path found! (could be caused by locker chase cancel)"); return end 
 
 	return 
 end

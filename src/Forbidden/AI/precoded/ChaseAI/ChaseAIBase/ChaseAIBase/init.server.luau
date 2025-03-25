@@ -8,7 +8,7 @@ local run 				= game:GetService("RunService")
 local debris			= game:GetService("Debris")
 
 -- # Forbidden Modules
-local int_forbidden 	= rs:WaitForChild("ForbiddenAPI")
+local int_forbidden 	= rs:WaitForChild("Forbidden")
 local int_ai			= int_forbidden:WaitForChild("AI")
 local forbidden			= require(int_forbidden)
 local std 				= forbidden.Standard
@@ -288,12 +288,11 @@ local function LostPlayer(TargetedPlayer: Player, overrideNetworkReset: boolean)
 	if human == nil then return end  
 
 	if config.NotInSightDoSprint then
-		if human > 0 then
+		if human.Health > 0 then
 			config.enemy_human.WalkSpeed = config.chaseSpeed
 		end
 	end
 	
-
 end
 
 -- Called when the AI starts to wander.

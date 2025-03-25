@@ -64,15 +64,15 @@ config.standardPathfindSettings 	= {
 config.doWander 					= true		-- Whether or not the AI will use the wander function when not chasing. (default: true)
 	config.doRandomWander				= false		-- If true, calls "getRandomLocationInMap" (and gets pos above floors prov.), otherwise, calls "getRandomNode" for a part to go to. (default: false)
 		config.debug_rand_pos 				= false 	-- If using the random wander function (default: false)
-	config.nodes_table					= {workspace:WaitForChild("target")}		-- If using random wander, give all valid floors. If not, give manually made nodes. (any models use primary part, if not, they are tossed) (default: {} -- empty) 
-	config.WanderPauseTimer				= 0			-- Pause at node for x time. (default: 0)
+	config.nodes_table					= {workspace:WaitForChild("nodes")}		-- If using random wander, give all valid floors. If not, give manually made nodes. (any models use primary part, if not, they are tossed) (default: {} -- empty) 
+	config.WanderPauseTimer				= 3			-- Pause at node for x time. (default: 0)
 	config.EnableNodeOrder				= false		-- Will follow the nodes in the order provided. (in the table) (default: false)
 
 config.BadPathProtection			= true		-- ignores targets the AI fails to path to (for a period of time). (default: true)
 
 
 -- Visualization /!\
-config.Visualize					= false		-- Visualizes the pathfinding algorithm. (default: false)
+config.Visualize					= true		-- Visualizes the pathfinding algorithm. (default: false)
 	config.ViewCone						= false					-- Visualizes the view cone (if less than 90) (default: false)
 
 

@@ -3,7 +3,7 @@ local playersRequired = 2
 -- Services
 local rs = game:GetService("ReplicatedStorage")
 
-local int_Forbidden 	= rs:WaitForChild("ForbiddenAPI")
+local int_Forbidden 	= rs:WaitForChild("Forbidden")
 local multiplayer 		= int_Forbidden:WaitForChild("Multiplayer")
 local queueMOD 			= require(multiplayer:WaitForChild("Queue"))
 local std 				= require(int_Forbidden:WaitForChild("Standard"))

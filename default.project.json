@@ -8,7 +8,7 @@
 
       "$className": "ReplicatedStorage",
       "$ignoreUnknownInstances": true,
-      "ForbiddenAPI": {
+      "Forbidden": {
         "$path": "src/Forbidden"
       }
 
