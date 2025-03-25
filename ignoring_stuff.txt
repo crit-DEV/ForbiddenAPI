@@ -1,3 +1,0 @@
- "globIgnorePaths": [
-    "src/Forbidden/AI/precoded/ChaseAI/**/Settings.luau"
-  ]
