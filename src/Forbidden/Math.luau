@@ -1,5 +1,7 @@
 local API = {}
 
+local PhysicsService = game:GetService("PhysicsService")
+
 local int_Forbidden = script.Parent
 local basic = require(int_Forbidden:WaitForChild("Standard"):WaitForChild("stdfunctions"))
 
@@ -81,8 +83,8 @@ API.LineOfSight = function(Object1: Instance, Object2: Instance, raycastSettings
 	end
 
 	-- Get Hitboxes
-	local hitbox1 = hitboxes[1]
-	local hitbox2 = hitboxes[2]
+	local hitbox1: BasePart = hitboxes[1]
+	local hitbox2: BasePart = hitboxes[2]
 	local direction = (hitbox2.Position - _LoS_Settings["OffsetFromOrigin"] - hitbox1.Position).Unit -- 3/15/25 @rman501, did not account for offset
 
 	-- Raycast Params
@@ -98,8 +100,9 @@ API.LineOfSight = function(Object1: Instance, Object2: Instance, raycastSettings
 	
 	raycastParams.FilterDescendantsInstances = filtertable
 	raycastParams.FilterType = Enum.RaycastFilterType.Exclude
+	raycastParams.CollisionGroup = hitbox1.CollisionGroup -- 5/17/25 @add collision group to raycast.
 
-	local result: RaycastResult = nil
+	local result: RaycastResult? = nil
 
 	local function raycast() -- cast ray
 
