@@ -568,11 +568,11 @@ API.SmartPathfind = function(NPC: any, Target: any, Yields: boolean, userSetting
 
 	-- The target is reached if the Y position does not very too differently from the AI's height, and the position is about on target.
 	-- unverified change 9/23/24 @rman501, no Y in 2nd test.
-	local function targetReached()
-		if math.abs(enemyRoot.CFrame.Position.Y - targetRoot.CFrame.Position.Y) > pfSettings.StandardPathfindSettings.AgentHeight / 2 then return false end
+	local function targetReached(adjustedTargetPos: Vector3)
+		if math.abs(enemyRoot.CFrame.Position.Y - adjustedTargetPos.Y) - pfSettings.StandardPathfindSettings.AgentHeight / 2 + .5 > 0 then return false end
 		local noYer = Vector3.new(enemyRoot.CFrame.Position.X, 0, enemyRoot.CFrame.Position.Z)
-		local noYtr = Vector3.new(targetRoot.CFrame.Position.X, 0, targetRoot.CFrame.Position.Z)
-		if (noYer - noYtr).Magnitude > 0.1 then return false end
+		local noYtr = Vector3.new(adjustedTargetPos.X, 0, adjustedTargetPos.Z)
+		if (noYer - noYtr).Magnitude > .5 then return false end
 		return true
 	end
 
@@ -637,7 +637,15 @@ API.SmartPathfind = function(NPC: any, Target: any, Yields: boolean, userSetting
 			if pfSettings.Tracking and losCheck() then
 				adjustedTargetPos = targetRoot.CFrame.Position + pfSettings.TargetPositionOffset + getCollinearPointOffset()
 				moveToTargetRoot()
-				if targetReached() then spawn(dummyGoalReached) end
+				if targetReached(adjustedTargetPos) then spawn(dummyGoalReached) end
+
+				-- also check later
+				task.spawn(function()
+					enemyHuman.MoveToFinished:Wait()
+					if processes[NPC][2] ~= token then return end
+					if targetReached(adjustedTargetPos) then spawn(dummyGoalReached) end
+				end)
+
 				return Enum.PathStatus.Success
 			end
 		end
@@ -933,7 +941,8 @@ API.SmartPathfind = function(NPC: any, Target: any, Yields: boolean, userSetting
 		end
 		
 		--print("Call ended.")
-		if processes[NPC][1] == API.PathingStates.STOP then
+		if processes[NPC][1] == API.PathingStates.STOP and not processes[NPC][4] then
+			reset(NPC) -- 5/30/25 @rman501 UNTESTED, potential fix for NPC on Tracking call if no update. (otherwise it wouldnt stop?)
 			processes[NPC][1] = API.PathingStates.STOPACKNOWLEDGED
 		end
 		processes[NPC][4] = false -- if concurrency was used, then reset it.
@@ -1004,16 +1013,18 @@ local function onStoppage(NPC)
 	processes[NPC][1] = API.PathingStates.STOP
 
 	-- Destroy any and all waypoint folders inside of the NPC, these should be previous ones so beware of the call.
+	-- 5/30/25 @rman501, old system would nuke itself
 	local function destroyWP()
 		
-		-- 10/20/24 @rman501, more effective system.
-		while NPC:FindFirstChild("Waypoints") do
-			debris:AddItem(NPC:FindFirstChild("Waypoints"), 0)
-		end
+		for i, v in pairs(NPC:GetChildren()) do
+			if v.Name == "Waypoints" then
+				debris:AddItem(v, 0)
+			end
 		
 
-		while NPC:FindFirstChild(NPC.Name .. " Target") do
-			debris:AddItem(NPC:FindFirstChild(NPC.Name .. " Target"), 0)
+			if v.Name == NPC.Name .. " Target" then
+				debris:AddItem(v, 0)
+			end
 		end
 	end
 	

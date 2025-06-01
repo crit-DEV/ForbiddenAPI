@@ -22,11 +22,11 @@ config.AntiLag 						= true		-- Dictates whether the AI antilag is activated. (p
 	-- By using anti-lag, many bugs disappear due to the server handling all calculations and not handing off the processing to the client.
 	-- if not using the default anti-lag, you must write your own, for solo-games, you can pretty much just set the AI network owner to the player for the best experience.
 
-
+-- //
 -- Chase AI with hiding settings
 config.LockerChase					= true				-- If true, the AI chases the player to the locker. (should it see them hide.)
 	-- for further editing, go to the hooks. all implementation of this system, in connection to the original script, is done in there.
-
+-- \\
 
 -- # Behaviors
 config.PreventAIFromSitting			= true		-- (default: true)

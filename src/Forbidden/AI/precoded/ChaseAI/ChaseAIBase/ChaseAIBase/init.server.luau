@@ -102,13 +102,11 @@ local function damage_delay_handler()
 	creditKill = true -- if the player is lost and it doesnt think it killed it (based on this variable) then it will call LostPlayer
 	damaged_recently = true
 
-	-- 3/23/25 @rman501, disableAIWhileDamaging key in config was not correct.
 	if config.disableAIWhileDamaging then
 		spawn(function()
-			config.isActive = false
+			hooks.In.PauseAI(config.damageDelay)
 			task.wait(config.damageDelay)
 			damaged_recently = false
-			config.isActive = true
 		end)
 	end
 
@@ -119,6 +117,7 @@ local function damage_delay_handler()
 		end)
 	end
 end
+
 
 -- Called if a player that is not targeted is touched.
 local function TouchedOther(other_plr_char: Model)
@@ -293,6 +292,7 @@ local function LostPlayer(TargetedPlayer: Player, overrideNetworkReset: boolean)
 		end
 	end
 	
+
 end
 
 -- Called when the AI starts to wander.

@@ -60,7 +60,7 @@ local function onJumping(active: boolean)
 end
 
 local function onWalk(active: boolean)
-	if not motionActive then return end
+	if not motionActive then isWalking = false doStandard(Animations.Wandering, active) return end
 	if active and isWalking then return end
 	if active then isWalking = true end
 	if not active then isWalking = false end
@@ -68,7 +68,7 @@ local function onWalk(active: boolean)
 end
 
 local function onRunning(active: boolean)
-	if not motionActive then return end
+	if not motionActive then isRunning = false doStandard(Animations.Chasing, active) return end
 	if active and isRunning then return end
 	if active then isRunning = true end
 	if not active then isRunning = false end
@@ -207,14 +207,14 @@ local function MovementHandler(speed: number)
 	-- Wander Anim (WALK)
 	if 0 < speed and speed <= config.wanderSpeed then
 		if not Hooks.In.IsWandering() then return end
-		onRunning(false)
+		if Animations.Wandering[1] ~= Animations.Chasing[1] then onRunning(false) end
 		onWalk(true)
 	end
 
 	-- Chase Anim (RUN)
 	if config.wanderSpeed < speed then
 		if Hooks.In.GetPlayerChasing() == nil then return end
-		onWalk(false)
+		if Animations.Wandering[1] ~= Animations.Chasing[1] then onWalk(false) end
 		onRunning(true)
 	end
 end
@@ -228,8 +228,11 @@ human.Running:Connect(MovementHandler)
 
 Hooks.Animator.MotionStopped = function()
 
-
+	
 	doStandard(Animations.Idle, true) -- 11/2/24 @rman501, idle never called.
+	
+	-- 3/10/25 @rman501, was at top of function and the above functions did not function correctly.
+	motionActive = false
 
 	if isWalking then
 		onWalk(false)
@@ -239,8 +242,6 @@ Hooks.Animator.MotionStopped = function()
 		onRunning(false)
 	end
 
-	-- 3/10/25 @rman501, was at top of function and the above functions did not function correctly.
-	motionActive = false
 end
 
 Hooks.Animator.MotionActivated = function()
