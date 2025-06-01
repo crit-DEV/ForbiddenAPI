@@ -1,0 +1,25 @@
+{
+    "ClassName": "Folder",
+    "Children": [
+        {
+            "Name": "events",
+            "ClassName": "Folder",
+            "Children": [
+                {
+                    "Name": "HideEvent",
+                    "ClassName": "RemoteEvent"
+                }
+            ]
+        },
+        {
+            "Name": "functions",
+            "ClassName": "Folder",
+            "Children": [
+                {
+                    "Name": "RequestLocker",
+                    "ClassName": "RemoteFunction"
+                }
+            ]
+        }
+    ]
+}

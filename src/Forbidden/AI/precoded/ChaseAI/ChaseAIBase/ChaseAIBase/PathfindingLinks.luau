@@ -6,6 +6,11 @@ local common = require(script.Parent:WaitForChild("Hooks"):WaitForChild("Common"
 
 -- DO NOT TOUCH
 PathfindingLinks.MANAGER = function(wp: PathWaypoint): boolean
+
+	if wp.Label == "" then
+		PathfindingLinks.NoLabelProvided(wp)
+	end
+
 	if PathfindingLinks[wp.Label] then
 		return PathfindingLinks[wp.Label](wp.Position)
 	end
@@ -16,6 +21,11 @@ end
 -- If there is no specific code for a waypoint, this function is called
 -- You could just make this teleport the AI then return true
 PathfindingLinks.Default = function(wp: PathWaypoint): boolean
+	warn("[ChaseAI.PathfindingLinks] Pathfinding Link (" .. wp.Label .. ") had no code associated with it.")
+	return true
+end
+
+PathfindingLinks.NoLabelProvided = function(wp: PathWaypoint): boolean
 	warn("[ChaseAI.PathfindingLinks] Pathfinding Link (" .. wp.Label .. ") had no code associated with it.")
 	return true
 end
