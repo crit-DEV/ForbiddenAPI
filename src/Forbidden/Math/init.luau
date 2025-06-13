@@ -5,14 +5,19 @@ local PhysicsService = game:GetService("PhysicsService")
 local int_Forbidden = script.Parent
 local basic = require(int_Forbidden:WaitForChild("Standard"):WaitForChild("stdfunctions"))
 
-type RaycastSettings = {
+local MathVisualization = require(script:WaitForChild("MathVisualization"))
+
+export type RaycastSettings = {
 	range: number, 
 	SeeThroughTransparentParts: boolean, 
 	SeeThroughNonCollidable: boolean, 
 	MinimumTransparency: number, 
 	filterTable: {}, 
 	filterAttempts: number,
-	OffsetFromOrigin: Vector3
+	OffsetFromOrigin: Vector3,
+	OffsetFromTarget: Vector3,
+	VisualizeRaycast: boolean,
+	OutputCollision: boolean
 }
 
 API.LineOfSight = function(Object1: Instance, Object2: Instance, raycastSettings: RaycastSettings, ERROROVERRIDE: boolean): any
@@ -28,18 +33,27 @@ API.LineOfSight = function(Object1: Instance, Object2: Instance, raycastSettings
 	local _LoS_Settings = {
 
 		range = 50, -- length of raycast, DO NOT RAISE TO AN ABSURD VALUE
-		SeeThroughTransparentParts = false,
 		MinimumTransparency = 0.01,
+		SeeThroughTransparentParts = false,
 		SeeThroughNonCollidable = false,
 		filterTable = "default", -- get descendants to ignore
 		filterAttempts = 15,
-		OffsetFromOrigin = Vector3.new(0,0,0)
+		OffsetFromOrigin = Vector3.new(0,0,0),
+		OffsetFromTarget = Vector3.new(0,0,0),
+		VisualizeRaycast = false,
+		OutputCollision = false
 	}
 
 
 	for setting, v in pairs(raycastSettings) do
 		_LoS_Settings[setting] = v
 	end
+
+	-- BY DEFAULT: TOTALLY TRANSPARENT PARTS ARE IGNORED.
+	-- if raycastSettings["SeeThroughTransparentParts"] == nil then
+	-- 	_LoS_Settings["SeeThroughTransparentParts"] = true
+	-- 	_LoS_Settings["MinimumTransparency"] = 1
+	-- end
 
 	local i = 0
 	local hitboxes = {}
@@ -85,17 +99,31 @@ API.LineOfSight = function(Object1: Instance, Object2: Instance, raycastSettings
 	-- Get Hitboxes
 	local hitbox1: BasePart = hitboxes[1]
 	local hitbox2: BasePart = hitboxes[2]
-	local direction = (hitbox2.Position - _LoS_Settings["OffsetFromOrigin"] - hitbox1.Position).Unit -- 3/15/25 @rman501, did not account for offset
+
+	local originPosition = hitbox1.CFrame.Position + _LoS_Settings["OffsetFromOrigin"]
+	local targetPosition = hitbox2.CFrame.Position + _LoS_Settings["OffsetFromTarget"]
+
+	local direction = (targetPosition - originPosition).Unit -- 3/15/25 @rman501, did not account for offset -- 6/13/25 @rman501, didn't add offset...
 
 	-- Raycast Params
 	local raycastParams = RaycastParams.new()
+	
+	local function shallowCopy(tbl)
+		local new = {}
+		for i, v in pairs(tbl) do
+			new[i] = v
+		end
+		return new
+	end
+	
 	local filtertable = {hitbox1}
 	if type1 == "Model" then
 		filtertable = {Object1}
 	end
 	
 	if _LoS_Settings["filterTable"] ~= "default" then
-		filtertable = _LoS_Settings["filterTable"]
+		-- print(_LoS_Settings["filterTable"])
+		filtertable = shallowCopy(_LoS_Settings["filterTable"])
 	end
 	
 	raycastParams.FilterDescendantsInstances = filtertable
@@ -107,11 +135,17 @@ API.LineOfSight = function(Object1: Instance, Object2: Instance, raycastSettings
 	local function raycast() -- cast ray
 
 		result = nil
-		result = workspace:Raycast(hitbox1.Position + _LoS_Settings["OffsetFromOrigin"], direction*_LoS_Settings["range"], raycastParams)
+		result = workspace:Raycast(originPosition, direction*_LoS_Settings["range"], raycastParams)
+
+		
+		if _LoS_Settings["OutputCollision"] and not result then print("No result") end
 
 		if result then
 			--	print(hitbox1)
 			--	print(hitbox2)
+			
+			-- if _LoS_Settings["OutputCollision"] then print(result.Instance) end
+
 			if result.Instance == hitbox2 then -- checks to see if part is detected
 				return true
 			end
@@ -138,6 +172,7 @@ API.LineOfSight = function(Object1: Instance, Object2: Instance, raycastSettings
 	if not _LoS_Settings["SeeThroughTransparentParts"] or _LoS_Settings["SeeThroughTransparentParts"] == nil then
 		local restest = raycast()
 		--print(restest)
+		if _LoS_Settings["VisualizeRaycast"] then MathVisualization.VisualizeRaycast(Object1, originPosition, targetPosition, restest) end
 		return restest
 	end
 	
@@ -178,6 +213,7 @@ API.LineOfSight = function(Object1: Instance, Object2: Instance, raycastSettings
 			
 			if F_result then
 				foundEnd = true
+				if _LoS_Settings["VisualizeRaycast"] then MathVisualization.VisualizeRaycast(Object1, originPosition, targetPosition, true) end
 				return true
 			end
 			
@@ -191,6 +227,7 @@ API.LineOfSight = function(Object1: Instance, Object2: Instance, raycastSettings
 			end
 			
 			-- if not filter condition, return false
+			if _LoS_Settings["VisualizeRaycast"] then MathVisualization.VisualizeRaycast(Object1, originPosition, targetPosition, false) end
 			return false
 		end
 
@@ -199,6 +236,7 @@ API.LineOfSight = function(Object1: Instance, Object2: Instance, raycastSettings
 			--print(Object2)
 			--print(parentModel)
 			warn("Exceeded maximum iterations in LineOfSight function.") -- means no solid object was hit.
+			if _LoS_Settings["VisualizeRaycast"] then MathVisualization.VisualizeRaycast(Object1, originPosition, targetPosition, false) end
 			return false
 		end
 	end
