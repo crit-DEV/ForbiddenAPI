@@ -1,1 +1,0 @@
--- Credit to NotStabHimNotMe for this locker model.
