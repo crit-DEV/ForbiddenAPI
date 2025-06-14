@@ -1,3 +1,7 @@
+-- authors:
+-- @rman501, initial commit
+-- @skull, updated
+
 -- Services
 local UIS 					= game:GetService("UserInputService")
 local rs 					= game:GetService("ReplicatedStorage")
@@ -13,16 +17,23 @@ local remotes				= rs:WaitForChild("signals"):WaitForChild("remotes")
 local RE_HideEvent			= remotes:WaitForChild("events"):WaitForChild("HideEvent")
 local RF_RequestLocker		= remotes:WaitForChild("functions"):WaitForChild("RequestLocker")
 
-local ContextActionService = game:GetService("ContextActionService")
-local FREEZE_ACTION = "freezeMovement"
+local ContextActionService 	= game:GetService("ContextActionService")
+local FREEZE_ACTION			= "freezeMovement"
 
 -- Settings
-local hideButtons 			= {
-	Enum.KeyCode.E,
-	--Enum.KeyCode.R,
-	Enum.UserInputType.MouseButton1,
-	--Enum.UserInputType.Gamepad2,
-}
+-- @skull
+local KeyAssignments = require(rs:WaitForChild("KeyAssignments", 0.5))
+if KeyAssignments == nil then
+	error("No key assignments module! Please reintegrate your own or put the module in ReplicatedStorage.")
+end
+
+-- @rman501, old keys
+-- local hideButtons 			= {
+-- 	Enum.KeyCode.E,
+-- 	--Enum.KeyCode.R,
+-- 	Enum.UserInputType.MouseButton1,
+-- 	--Enum.UserInputType.Gamepad2,
+-- }
 local interactDistance 		= 5
 local enterTime				= 0.1
 local exitTime				= 0.1
@@ -45,43 +56,58 @@ local currentLocker = nil
 
 local db = false
 
-local function hide()
+-- @rman501, redundancy for e to interact.
+local function getClosestValidLocker()
+
+	local CVL		= nil
+	local CVL_DIST	= math.huge
+
+	for i, locker in pairs(lockers:GetChildren()) do
+		local dist = (locker.PrimaryPart.Position - hrt.Position).Magnitude
+		if dist > CVL_DIST then continue end
+		CVL 		= locker
+		CVL_DIST	= dist
+	end
+
+	if CVL_DIST > interactDistance then return nil end
+
+	return CVL
+end
+
+-- @skull, 6/13/25 ty for cleaner version.
+local function hide(locker: Model?)
 	if db then return end
+
+	if locker == nil then
+		locker = getClosestValidLocker()
+	end
+
+	if locker == nil then return end -- no near locker.
 
 	-- STARTING TO HIDE
 	if not isHiding then
 
-		for i, locker in pairs(lockers:GetChildren()) do
-			local dist = (locker.PrimaryPart.Position - hrt.Position).Magnitude
-			if dist <= interactDistance then
+		local isAvailableObj = locker:WaitForChild("isAvailable")
+		if isAvailableObj == nil then error("Could not find isAvailable bool object in the locker!") end
 
-				local isAvailableObj = locker:WaitForChild("isAvailable")
-				if isAvailableObj == nil then error("Could not find isAvailable bool object in the locker!") end
+		if not isAvailableObj.Value then return end -- try to find an open locker.
 
-				if not isAvailableObj.Value then continue end -- try to find an open locker.
+		isHiding = true
+		beganHiding(locker)
+		currentLocker = locker
 
-				isHiding = true
-				beganHiding(locker)
-				currentLocker = locker
+		db = true
+		task.wait(enterTime)
+		db = false
 
-				db = true
-				task.wait(enterTime)
-				db = false
-
-				RE_HideEvent:FireServer(true, currentLocker)
-				-- To freeze
-				ContextActionService:BindAction(
-					FREEZE_ACTION,
-					function() return Enum.ContextActionResult.Sink end,
-					false,
-					unpack(Enum.PlayerActions:GetEnumItems())
-				)
-
-				break
-
-			end
-		end
-
+		RE_HideEvent:FireServer(true, currentLocker)
+		-- To freeze
+		ContextActionService:BindAction(
+			FREEZE_ACTION,
+			function() return Enum.ContextActionResult.Sink end,
+			false,
+			unpack(Enum.PlayerActions:GetEnumItems())
+		)
 		return
 	end
 
@@ -91,45 +117,47 @@ local function hide()
 		isHiding = false
 		stoppedHiding(currentLocker)
 
-		db = true
-		task.wait(enterTime)
-		db = false
-
 		RE_HideEvent:FireServer(false, currentLocker)
 		currentLocker = nil
 		-- To unfreeze
 		ContextActionService:UnbindAction(FREEZE_ACTION)
 
+		db = true
+		task.wait(enterTime)
+		db = false
 
 		return
 	end
 end
 
 local function inputBegan(input: InputObject, chat)
-	
+
 	if chat then return end
-	
-	-- Mouse / Gamepad Handler
-	if input.KeyCode == Enum.KeyCode.Unknown then
-		for i, v in pairs(hideButtons) do
-			if v.EnumType ~= input.UserInputType.EnumType then continue end -- if it is Keyboard related
-			if v == input.UserInputType then
-				hide()
-				return -- stop duplicate execution
-			end
-		end
-	end
-	
-	-- Keyboard Handler
-	if input.KeyCode ~= Enum.KeyCode.Unknown then
-		for i, v in pairs(hideButtons) do
-			if v.EnumType ~= input.KeyCode.EnumType then continue end
-			if v == input.KeyCode then
-				hide()
-				return -- stop duplicate execution
-			end
-		end
-	end
+	-- @skull, new code!
+	if KeyAssignments.CheckInputs(input, "Hide") then hide() end
+
+	-- @rman501, old code!
+	-- -- Mouse / Gamepad Handler
+	-- if input.KeyCode == Enum.KeyCode.Unknown then
+	-- 	for i, v in pairs(hideButtons) do
+	-- 		if v.EnumType ~= input.UserInputType.EnumType then continue end -- if it is Keyboard related
+	-- 		if v == input.UserInputType then
+	-- 			hide()
+	-- 			return -- stop duplicate execution
+	-- 		end
+	-- 	end
+	-- end
+
+	-- -- Keyboard Handler
+	-- if input.KeyCode ~= Enum.KeyCode.Unknown then
+	-- 	for i, v in pairs(hideButtons) do
+	-- 		if v.EnumType ~= input.KeyCode.EnumType then continue end
+	-- 		if v == input.KeyCode then
+	-- 			hide()
+	-- 			return -- stop duplicate execution
+	-- 		end
+	-- 	end
+	-- end
 end
 
 -- Called twice, 	 isCaught is false whenever the AI is approaching the locker, but true whenever the AI has reached the locker. 
@@ -154,6 +182,12 @@ UIS.InputBegan:Connect(inputBegan)
 RE_HideEvent.OnClientEvent:Connect(hideEventFired)
 RF_RequestLocker.OnClientInvoke = RequestLocker
 human.Died:Connect(playerDied)
+
+for _, locker in lockers:GetChildren() do
+	locker.ClickDetector.MouseClick:Connect(function()
+		hide(locker)
+	end)
+end
 
 ---- To freeze
 --ContextActionService:BindAction(

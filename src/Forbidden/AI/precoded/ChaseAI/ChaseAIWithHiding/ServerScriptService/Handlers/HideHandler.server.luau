@@ -1,3 +1,7 @@
+-- authors:
+-- @rman501, initial commit
+-- @skull, updated
+
 -- Services
 local rs = game:GetService("ReplicatedStorage")
 local players = game:GetService("Players")
@@ -7,57 +11,45 @@ local RE_HideEvent = rs:WaitForChild("signals"):WaitForChild("remotes"):WaitForC
 
 local lockers = {} -- if a player leaves, this tracks the locker they could be in and clears it!
 
+-- @skull, 6/13/25 ty for cleaner version.
 local function onHideEvent(player: Player, hide: boolean, locker: Model)
-	local hideValue = player:WaitForChild("TemporaryValues"):WaitForChild("isHiding")
-	
-	hideValue.Value = hide
-	
-	if hide then
-		
-		local char = player.Character
-		if char == nil then error("Character is nil!") end 
-		
-		local tpToPart = locker:WaitForChild("floor")
-		if tpToPart == nil then error("Could not find floor to TP to!") end
-		
-		local yRotVal = tpToPart:WaitForChild("PlayerYRotation")
-		if yRotVal == nil then error("Could not find PlayerYRotation value inside of the tp part!") end
-		
-		local isAvailableObj = locker:WaitForChild("isAvailable")
-		if isAvailableObj == nil then error("Could not find isAvailable bool object inside of the locker!") end
-		if not isAvailableObj.Value then return end -- The locker is full!
-		
-		local hrt = char:WaitForChild("HumanoidRootPart")
-		hrt.CFrame = (CFrame.new(0, 3 + tpToPart.Size.Y / 2, 0) + tpToPart.Position) * CFrame.Angles(0, math.rad(yRotVal.Value), 0) -- 3 is standard humanoid height.
-		
-		lockers[player.UserId] = locker
-		isAvailableObj.Value = false
-		
-		return
-	end
-	
-	if not hide then
-		
-		local char = player.Character
-		if char == nil then error("Character is nil!") return end
-		
-		local tpToPart = locker:WaitForChild("front")
-		if tpToPart == nil then error("Could not find floor to TP to!") end
-		
-		local yRotVal = tpToPart:WaitForChild("PlayerYRotation")
-		if yRotVal == nil then error("Could not find PlayerYRotation value inside of the tp part!") end
-		
-		local isAvailableObj = locker:WaitForChild("isAvailable")
-		if isAvailableObj == nil then error("Could not find isAvailable bool object inside of the locker!") end
-		
-		local hrt = char:WaitForChild("HumanoidRootPart")
-		hrt.CFrame = (CFrame.new(0, 3 + tpToPart.Size.Y / 2, 0) + tpToPart.Position) * CFrame.Angles(0, math.rad(yRotVal.Value), 0) -- 3 is standard humanoid height.
-		
-		lockers[player.UserId] = nil
-		isAvailableObj.Value = true
-		
-		return
-	end
+    local tempValues = player:WaitForChild("TemporaryValues")
+    local hideValue = tempValues:WaitForChild("isHiding")
+    hideValue.Value = hide
+
+    local char = player.Character
+    if not char then warn("Character is nil for player:", player.Name) return end
+        
+    local hrt = char:WaitForChild("HumanoidRootPart")
+    
+    local isAvailableObj = locker:WaitForChild("isAvailable")
+    if not isAvailableObj then error("Could not find isAvailable bool for locker:", locker:GetFullName()) end
+
+    if hide then
+        if not isAvailableObj.Value then return end -- The locker is full!
+             
+        local tpToPart = locker:WaitForChild("floor")
+        if not tpToPart then error("Could not find 'floor' part in locker:", locker:GetFullName()) end
+
+        local yRotVal = tpToPart:WaitForChild("PlayerYRotation")
+        if not yRotVal then error("Could not find 'PlayerYRotation' value in 'floor' of locker:", locker:GetFullName())    end
+
+        hrt.CFrame = (CFrame.new(0, 3 + tpToPart.Size.Y / 2, 0) + tpToPart.Position) * CFrame.Angles(0, math.rad(yRotVal.Value), 0)
+
+        lockers[player.UserId] = locker
+        isAvailableObj.Value = false
+    else -- not hide
+        local tpToPart = locker:WaitForChild("front")
+        if not tpToPart then error("Could not find 'front' part in locker:", locker:GetFullName()) end
+
+        local yRotVal = tpToPart:WaitForChild("PlayerYRotation")
+        if not yRotVal then error("Could not find 'PlayerYRotation' value in 'front' of locker:", locker:GetFullName()) end
+
+        hrt.CFrame = (CFrame.new(0, 3 + tpToPart.Size.Y / 2, 0) + tpToPart.Position) * CFrame.Angles(0, math.rad(yRotVal.Value), 0)
+
+        lockers[player.UserId] = nil
+        isAvailableObj.Value = true
+    end
 end
 
 local function characterAdded(char: Model)
