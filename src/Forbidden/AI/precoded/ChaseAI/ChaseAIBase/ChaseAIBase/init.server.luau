@@ -213,17 +213,21 @@ end
 -- During the continous loop to ensure the player should still be chased, your own input. If false, it stops.
 local function ContinueChasing(TargetedPlayer: Player)
 
+	
 	-- 10/22/24 @rman501, limit AI Chase range
 	if not isValidTarget(TargetedPlayer) then return end
-
+	
 	local char = TargetedPlayer.Character
 	if char == nil then return false end
-
+	
 	local plr_human = char:FindFirstChild("Humanoid")
 	if plr_human.Health <= 0 then return false end
-
+	
 	local plr_hrt = char:FindFirstChild("HumanoidRootPart")
 	if plr_hrt == nil then return false end
+	
+	-- 6/15/25 @rman501, chasing hook never called
+	if not hooks.Out.ContinueChasing(TargetedPlayer) then return false end
 
 	if config.LimitChaseRange then
 

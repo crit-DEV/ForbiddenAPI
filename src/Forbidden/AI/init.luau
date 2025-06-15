@@ -92,6 +92,9 @@ local function reset(NPC)
 		-- Override the waypoint MoveTo
 		task.wait(sacp.Value)
 		local hrt = NPC:FindFirstChild("HumanoidRootPart")
+		if hrt == nil then return end
+		warn("[AI.Reset] No HRT for NPC: " .. NPC:GetFullName())
+
 		human:MoveTo(hrt.CFrame.p)
 		return
 	end
@@ -703,9 +706,10 @@ API.SmartPathfind = function(NPC: any, Target: any, Yields: boolean, userSetting
 		end
 
 		-- In order to ensure the AI can always path :)
-		local erp = groundingHandler(enemyRoot, false)
-		local trp = groundingHandler(targetRoot, false)
-		local trp_adj = groundingHandler(targetRoot, true)
+		-- @rman501 6/15/25, added a simple y offset to make sure nothing weird happens with the NavMesh.
+		local erp = groundingHandler(enemyRoot, false) + Vector3.new(0, 1, 0)
+		local trp = groundingHandler(targetRoot, false) + Vector3.new(0, 1, 0)
+		local trp_adj = groundingHandler(targetRoot, true) + Vector3.new(0, 1, 0)
 
 		-- Compute the pathfind and get the waypoints.
 		-- 10/25/24 -- try to compute adjustedTargetPos path first.
