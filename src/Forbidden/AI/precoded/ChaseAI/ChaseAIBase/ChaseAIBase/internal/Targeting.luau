@@ -40,6 +40,11 @@ API.SetPreviousTarget = function(newTarget: Model?)
 	AP_PREV_TARGET = newTarget
 end
 
+local pausedFlag = false
+API.SetPausedFlag = function()
+	pausedFlag = true
+end
+
 --local NPC_List = {}
 API.GetNearestVisiblePlayer = function()
 
@@ -148,6 +153,11 @@ API.GetNearestVisiblePlayer = function()
 			end
 		end
 
+	end
+
+	-- reset paused flag
+	if pausedFlag then
+		pausedFlag = false
 	end
 
 	AP_PREV_TARGET = nil -- 10/31/24 @rman501, reset AP sys.
