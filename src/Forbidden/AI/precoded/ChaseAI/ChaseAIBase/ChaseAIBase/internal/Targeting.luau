@@ -146,7 +146,7 @@ API.GetNearestVisiblePlayer = function()
 		end
 
 		-- 10/31/24 @rman501, target previous player after stun if possible.
-		if AP_PREV_TARGET ~= nil and config.AP_FocusPreviousTarget then
+		if AP_PREV_TARGET ~= nil and config.AP_FocusPreviousTarget and pausedFlag then
 			if data[2].Character == AP_PREV_TARGET then
 				nearestPlr = data[2]
 				break
