@@ -1058,6 +1058,7 @@ HOOKS_IN.PauseAI = function(optionalPauseTimer: number)
 	end
 
 	config.isActive = false
+	targeting.SetPausedFlag()
 	ai.Stop(config.enemy_char)
 
 	if isChasing then
