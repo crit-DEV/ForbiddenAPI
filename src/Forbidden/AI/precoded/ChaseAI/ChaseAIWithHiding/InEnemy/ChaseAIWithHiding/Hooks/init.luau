@@ -116,6 +116,7 @@ local function reachedLockerWherePlayerWasHiding(Player: Player)
 	-- for testing purposes
 	local char = Player.Character
 	local human = char:WaitForChild("Humanoid")
+	RE_HideEvent:FireClient(Player, true)
 	human.Health -= 100 -- insta kill!
 end
 
@@ -151,6 +152,7 @@ local function sawPlayerHide(Player: Player)
 		end
 	end)
 
+	RE_HideEvent:FireClient(Player, false)
 	if #config.standardPathfindSettings > 0 then 
 		result = ai.SmartPathfind(config.enemy_char, partToGo, true, {StandardPathfindSettings = config.standardPathfindSettings, ["Hooks"] = {GoalReached = function() reachedLockerWherePlayerWasHiding(Player) end}})
 	else

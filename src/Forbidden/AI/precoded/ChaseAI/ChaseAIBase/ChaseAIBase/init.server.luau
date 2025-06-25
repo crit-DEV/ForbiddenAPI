@@ -412,6 +412,8 @@ chasePart.Material = Enum.Material.Neon
 chasePart.Anchored = true
 chasePart.Size = Vector3.new(1,1,1)
 chasePart.CanCollide = false
+chasePart.CanTouch = false
+chasePart.CanQuery = false
 chasePart.Transparency = 1
 chasePart.Massless = true
 if config.Visualize then
