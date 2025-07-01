@@ -8,7 +8,7 @@ local common = require(script.Parent:WaitForChild("Hooks"):WaitForChild("Common"
 PathfindingLinks.MANAGER = function(wp: PathWaypoint): boolean
 
 	if wp.Label == "" then
-		PathfindingLinks.NoLabelProvided(wp)
+		return PathfindingLinks.NoLabelProvided(wp)
 	end
 
 	if PathfindingLinks[wp.Label] then
@@ -25,6 +25,7 @@ PathfindingLinks.Default = function(wp: PathWaypoint): boolean
 	return true
 end
 
+-- If the label is blank "", it defaults to this function
 PathfindingLinks.NoLabelProvided = function(wp: PathWaypoint): boolean
 	warn("[ChaseAI.PathfindingLinks] Pathfinding Link (" .. wp.Label .. ") had no code associated with it.")
 	return true

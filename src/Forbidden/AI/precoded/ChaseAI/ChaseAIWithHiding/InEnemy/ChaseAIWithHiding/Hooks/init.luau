@@ -260,6 +260,8 @@ end
 -- SYNC
 -- Add special code here to influence if the AI should keep chasing the player.
 binds.ContinueChasing = function(player: Player)
+	if isPlayerHiding(player) then return false end 
+	-- by doing, this omniscient timer is removed, preventing bugs (such as pathing into locker i.e. causing it to become stagnant)
 	return true
 end
 

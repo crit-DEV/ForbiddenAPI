@@ -28,6 +28,7 @@ config.PreventAIFromSitting			= true		-- (default: true)
 config.PreventAIFromRagdolling		= true		-- (default: true)
 
 
+
 -- # Damaging / Hitbox System /!\
 config.damageDelay 					= 1			-- In seconds, how long until the AI can damage again (or move if setting below is enabled) (default: 1)
 config.damageDone 					= 100		-- (default: 100)
@@ -42,6 +43,8 @@ config.detectionBubble				= 5			-- In studs, if the AI should autodetect a playe
 config.OffsetFromPlayer 			= 0			-- In studs, the distance the AI will try to stay away from the player.
 config.seeThroughTransparent 		= true		-- Whether or not the AI can see through transparent parts
 config.seeThroughCanCollide			= true		-- Whether or not the AI can see through non-collidable parts.
+config.LostSightTimer				= 1			-- For how long does the AI know where the player is after losing line of sight.
+													-- purpose: think about kiting an AI around a bookshelf, without it, it won't check the corner the player ran around.
 
 
 -- # Speeds /!\

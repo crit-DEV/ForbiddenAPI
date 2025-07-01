@@ -83,17 +83,18 @@ API.Stuck = function(humanoid: Humanoid)
 	humanoid.Jump = true
 end
 
+-- 7/1/25 @rman501, fixed up & organized, also I am dumb, for why; see GitHub for a good laugh @ ~11AM EST
 local function reset(NPC)
 	local human : Humanoid = NPC:FindFirstChild("Humanoid")
-	if human == nil then warn("[AI.Reset] Humanoid was nil on reset.") end
+	if human == nil then warn("[AI.Reset] Humanoid was nil on reset."); return end
+
+	local hrt = NPC:FindFirstChild("HumanoidRootPart")
+	if hrt == nil then warn("[AI.Reset] No HRT for NPC: " .. NPC:GetFullName()); return end
 
 	local sacp = NPC:FindFirstChild("StopAtCurrentPosition")
 	if sacp ~= nil then
 		-- Override the waypoint MoveTo
 		task.wait(sacp.Value)
-		local hrt = NPC:FindFirstChild("HumanoidRootPart")
-		if hrt == nil then return end
-		warn("[AI.Reset] No HRT for NPC: " .. NPC:GetFullName())
 
 		human:MoveTo(hrt.CFrame.p)
 		return
@@ -101,7 +102,7 @@ local function reset(NPC)
 
 	local cW = NPC:FindFirstChild("CurrentWaypoint")
 	if cW ~= nil then
-		if cW.Value == Vector3.new(math.huge, math.huge, math.huge) then local hrt = NPC:FindFirstChild("HumanoidRootPart") human:MoveTo(hrt.CFrame.p)  return end -- 10/20/24 @rman501, stop from continuing to nowhere.
+		if cW.Value == Vector3.new(math.huge, math.huge, math.huge) then human:MoveTo(hrt.CFrame.p); return end -- 10/20/24 @rman501, stop from continuing to nowhere.
 		human:MoveTo(cW.Value)
 	end
 end

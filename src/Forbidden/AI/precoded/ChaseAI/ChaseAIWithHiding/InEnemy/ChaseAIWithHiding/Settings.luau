@@ -22,6 +22,7 @@ config.AntiLag 						= true		-- Dictates whether the AI antilag is activated. (p
 	-- By using anti-lag, many bugs disappear due to the server handling all calculations and not handing off the processing to the client.
 	-- if not using the default anti-lag, you must write your own, for solo-games, you can pretty much just set the AI network owner to the player for the best experience.
 
+	
 -- //
 -- Chase AI with hiding settings
 config.LockerChase					= true				-- If true, the AI chases the player to the locker. (should it see them hide.)
@@ -31,6 +32,7 @@ config.LockerChase					= true				-- If true, the AI chases the player to the loc
 -- # Behaviors
 config.PreventAIFromSitting			= true		-- (default: true)
 config.PreventAIFromRagdolling		= true		-- (default: true)
+
 
 
 -- # Damaging / Hitbox System /!\
@@ -47,6 +49,8 @@ config.detectionBubble				= 5			-- In studs, if the AI should autodetect a playe
 config.OffsetFromPlayer 			= 0			-- In studs, the distance the AI will try to stay away from the player.
 config.seeThroughTransparent 		= true		-- Whether or not the AI can see through transparent parts
 config.seeThroughCanCollide			= true		-- Whether or not the AI can see through non-collidable parts.
+config.LostSightTimer				= 1			-- For how long does the AI know where the player is after losing line of sight.
+													-- purpose: think about kiting an AI around a bookshelf, without it, it won't check the corner the player ran around.
 
 
 -- # Speeds /!\

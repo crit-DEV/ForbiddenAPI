@@ -412,6 +412,8 @@ chasePart.Material = Enum.Material.Neon
 chasePart.Anchored = true
 chasePart.Size = Vector3.new(1,1,1)
 chasePart.CanCollide = false
+chasePart.CanTouch = false
+chasePart.CanQuery = false
 chasePart.Transparency = 1
 chasePart.Massless = true
 if config.Visualize then
@@ -519,6 +521,8 @@ local function Chase(player: Player?)
 					
 					ai.SmartPathfind(config.enemy_char, anchorPoint, true, specSettings) -- start player chase.
 					
+
+
 					returnToAnchorPoint = false
 					if lastCallTime ~= thisCallTime then return end
 					lastCallTime = 0
@@ -600,6 +604,7 @@ local function Chase(player: Player?)
 	PlayerChaseBegan(player)
 	targeting.SetPreviousTarget(plrChasing.Character)
 
+	local LastSeenTime = os.clock()
 	while isChasing do
 		run.Heartbeat:Wait()
 		if not config.isActive then break end
@@ -613,9 +618,21 @@ local function Chase(player: Player?)
 
 		spawn(function() attackRangeHandler(false) end) -- 10/26/24 @rman501, added for attack systems
 
+		-- 7/1/25 @rman501, isolated
+		local function canSee()
+			return std.math.LineOfSight(config.enemy_char, plr_char, {range = config.detectionRange, SeeThroughTransparentParts = config.seeThroughTransparent, filterTable = {config.enemy_char, chasePart}})
+		end
 
-		-- If the NPC loses sight of the player, then chase to its last known location.
-		if std.math.LineOfSight(config.enemy_char, plr_char, {range = config.detectionRange, SeeThroughTransparentParts = config.seeThroughTransparent, filterTable = {config.enemy_char, chasePart}}) then
+		-- 7/1/25 @rman501, for LostSightTimer, that way the AI does not lose targets too easily
+		local function LostSightLongerThanTimer()
+			if config.LostSightTimer == 0 then return true end
+			return LastSeenTime + config.LostSightTimer < os.clock()
+		end
+
+		-- 7/1/25 @rman501, changed the if condition to incude LostSightTimer.
+		-- If the NPC loses sight of the player, then chase to its last known location (which in reality is extrapolated by LostSightTimer)
+		if canSee() and not LostSightLongerThanTimer() then
+			LastSeenTime = os.clock()
 			chasePart.Position = plr_hrt.Position
 			if not config.MeasureChaseRangeFromWhereStarted then -- 10/26/24 @rman501, MeasureChaseRange fix.
 				anchorPoint = config.enemy_hrt.CFrame.Position
