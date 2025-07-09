@@ -7,7 +7,7 @@ local common = require(script.Parent:WaitForChild("Hooks"):WaitForChild("Common"
 -- DO NOT TOUCH
 PathfindingLinks.MANAGER = function(wp: PathWaypoint): boolean
 
-	if wp.Label == "" then
+	if wp.Label == "" or wp.Label == nil then
 		return PathfindingLinks.NoLabelProvided(wp)
 	end
 

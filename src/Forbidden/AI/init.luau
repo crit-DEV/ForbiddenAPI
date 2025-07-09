@@ -34,6 +34,7 @@ type SmartPathfindSettings = {
 	PredictiveMoveTo: number,
 	TargetPositionOffset: Vector3,
 	CollinearTargetPositionOffset: number,
+	RespectPathfindingLinkTimer: number,
 	-- hooks for functionability.
 	Hooks: {
 		UsingMoveToLogic: (location: Vector3) -> nil,
@@ -204,6 +205,12 @@ local function nullbind() end -- for hooks.
 		<em>NOT RELATIVE
 		Offset the pathing position by this value.</em>
 		default: (0,0,0)
+
+		<code><strong>RespectPathfindingLinkTimeout</strong>: number</code>
+		<em>Before allowing another pathfind to compute, it will wait for an active Pathfinding Link to complete if not 0</em>
+		
+		<strong>Value is a timeout</strong>
+		default: (0,0,0)
 		
 		
 	<strong>Hooks</strong>
@@ -268,8 +275,9 @@ API.SmartPathfind = function(NPC: any, Target: any, Yields: boolean, userSetting
 		SwapMovementMethodDistance = 25, -- Intelligently uses distance to and the beneath line of sight settings to have more accurate close range tracking
 		SMMD_RaycastParams = {
 			range = 30, -- should be slightly higher than SwapMovementMethodDistance
-			SeeThroughTransparentParts = false
-		},
+			SeeThroughTransparentParts = false,
+			
+		} :: RaycastSettings,
 		RetrackTimer = 1/60,
 		SkipToWaypoint = 1, -- how many waypoints should it skip (-1)? For tracking this fixes the stutter bugs. Alternatively, you can alter waypoint spacing in StandardPathfindSettings.
 		PathfindStopType = API.PathfindStopType.CurrentPosition, -- What kind of stop will be performed when AI.Stop() is called.
@@ -277,6 +285,7 @@ API.SmartPathfind = function(NPC: any, Target: any, Yields: boolean, userSetting
 		PredictiveMoveTo = 0.25, -- When tracking (usually for players), what is the pursuit distance.
 		TargetPositionOffset = Vector3.new(0,0,0), -- Offset the pathing position by this value.
 		CollinearTargetPositionOffset = 0, -- Offset the pathing position by a vector of this magnitude toward the NPC.
+		RespectPathfindingLinkTimer = 10,
 		Hooks = {
 			UsingMoveToLogic = nullbind,
 			--PathfindLoaded = nullbind,
@@ -707,10 +716,9 @@ API.SmartPathfind = function(NPC: any, Target: any, Yields: boolean, userSetting
 		end
 
 		-- In order to ensure the AI can always path :)
-		-- @rman501 6/15/25, added a simple y offset to make sure nothing weird happens with the NavMesh.
-		local erp = groundingHandler(enemyRoot, false) + Vector3.new(0, 1, 0)
-		local trp = groundingHandler(targetRoot, false) + Vector3.new(0, 1, 0)
-		local trp_adj = groundingHandler(targetRoot, true) + Vector3.new(0, 1, 0)
+		local erp = groundingHandler(enemyRoot, false)
+		local trp = groundingHandler(targetRoot, false)
+		local trp_adj = groundingHandler(targetRoot, true)
 
 		-- Compute the pathfind and get the waypoints.
 		-- 10/25/24 -- try to compute adjustedTargetPos path first.
@@ -818,7 +826,9 @@ API.SmartPathfind = function(NPC: any, Target: any, Yields: boolean, userSetting
 				-- CUSTOM, pf link
 				-- 2/28/25 @rman501, added custom waypoints, pf link support
 				if wp.Action == Enum.PathWaypointAction.Custom then
+					processes[NPC][5] = os.clock()
 					local pflink_result = pfSettings.Hooks.PathfindingLinkReached(wp)
+					processes[NPC][5] = 0
 					if pflink_result == 2 then return end
 					if pflink_result then
 						continue
@@ -932,6 +942,15 @@ API.SmartPathfind = function(NPC: any, Target: any, Yields: boolean, userSetting
 
 			if targetPositionNow ~= lastPositionOfTarget then
 				
+				-- 7/8/25 @rman501, respect pathfinding links
+				if pfSettings.RespectPathfindingLinkTimer ~= 0 and processes[NPC][5] ~= nil then
+					if processes[NPC][5] + pfSettings.RespectPathfindingLinkTimer > os.clock() then
+						-- pf link active
+						task.wait(pfSettings.RetrackTimer) -- do the wait !
+						continue -- try again !
+					end
+				end
+
 				local status = pathfind(token)
 
 				-- 9/30/24 @rman501, Tracking when NoPath is returned.
@@ -963,6 +982,7 @@ API.SmartPathfind = function(NPC: any, Target: any, Yields: boolean, userSetting
 		[2] = TOKEN
 		[3] = LATEST LOADED TIME
 		[4] = CONCURRENT RECALL (T/F)
+		[5] = PATHFINDING LINK TIME (resets to 0 if not in use)
 		
 		]]--
 		
@@ -972,16 +992,25 @@ API.SmartPathfind = function(NPC: any, Target: any, Yields: boolean, userSetting
 		
 		-- IF STOP WAS CALLED IN PAST, WAIT FOR IT TO REGISTER.
 		if processes[NPC][1] == API.PathingStates.STOP then
-			local att = 0
-			while att < 100 and processes[NPC][1] == API.PathingStates.STOP do
-				att += 1
+			while processes[NPC][1] == API.PathingStates.STOP do
 				if token ~= processes[NPC][2] then return end -- no longer latest call.
 				task.wait()
+				-- TODO:// something could, in theory, maybe, get stuck here. please monitor
 			end
 		end
 		
 		if processes[NPC][1] == API.PathingStates.ACTIVE then
 			-- Concurrent recall
+			
+			-- 7/8/25 @rman501, respect pathfinding links
+			-- wait for a pf link to finish if true
+			if processes[NPC][5] ~= nil and pfSettings.RespectPathfindingLinkTimer ~= 0 then
+				while processes[NPC][5] + pfSettings.RespectPathfindingLinkTimer > os.clock() do
+					if token ~= processes[NPC][2] then return end -- no longer latest call.
+					task.wait()
+				end
+			end
+			
 			processes[NPC][4] = true
 			
 		end
