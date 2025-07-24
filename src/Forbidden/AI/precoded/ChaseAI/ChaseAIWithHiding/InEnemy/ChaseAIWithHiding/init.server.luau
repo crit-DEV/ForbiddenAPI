@@ -631,7 +631,7 @@ local function Chase(player: Player?)
 
 		-- 7/1/25 @rman501, changed the if condition to incude LostSightTimer.
 		-- If the NPC loses sight of the player, then chase to its last known location (which in reality is extrapolated by LostSightTimer)
-		if canSee() and not LostSightLongerThanTimer() then
+		if canSee() or not LostSightLongerThanTimer() then -- 7/18/25 @rman501, fixed boolean statement.
 			LastSeenTime = os.clock()
 			chasePart.Position = plr_hrt.Position
 			if not config.MeasureChaseRangeFromWhereStarted then -- 10/26/24 @rman501, MeasureChaseRange fix.

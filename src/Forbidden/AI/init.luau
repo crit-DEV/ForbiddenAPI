@@ -627,7 +627,9 @@ API.SmartPathfind = function(NPC: any, Target: any, Yields: boolean, userSetting
 				-- tR_Pos.Y  - enemyRoot.CFrame.Position.Y  > 2 and 
 				if enemyRoot.AssemblyLinearVelocity.Magnitude < enemyHuman.WalkSpeed * .33 and (tR_Pos - enemyRoot.CFrame.Position).Magnitude > 2 then -- 10/21/24 @rman501, kinda allows wall hugging
 					return true
-				end 
+				end
+
+				-- note for v2, if within x studs then block jump
 				
 				return false
 			end

@@ -96,10 +96,7 @@ local function hide(locker: Model?)
 		beganHiding(locker)
 		currentLocker = locker
 
-		db = true
-		task.wait(enterTime)
-		db = false
-
+		
 		RE_HideEvent:FireServer(true, currentLocker)
 		-- To freeze
 		ContextActionService:BindAction(
@@ -108,6 +105,11 @@ local function hide(locker: Model?)
 			false,
 			unpack(Enum.PlayerActions:GetEnumItems())
 		)
+
+		db = true
+		task.wait(enterTime)
+		db = false
+
 		return
 	end
 
@@ -123,7 +125,7 @@ local function hide(locker: Model?)
 		ContextActionService:UnbindAction(FREEZE_ACTION)
 
 		db = true
-		task.wait(enterTime)
+		task.wait(exitTime)
 		db = false
 
 		return
