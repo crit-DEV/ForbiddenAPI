@@ -1,7 +1,7 @@
 [package]
 name = "crit-dev/forbiddenapi"
 description = "A complex library for developing games. Mainly a library needed for intelligent behavior of NPCs."
-version = "0.2.1"
+version = "0.2.2"
 authors = ["crit-dev <fcoc8192r@gmail.com>"]
 registry = "https://github.com/upliftgames/wally-index"
 repository = "https://github.com/crit-DEV/ForbiddenAPI"
